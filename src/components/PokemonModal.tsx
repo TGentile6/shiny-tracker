@@ -1,21 +1,26 @@
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { type Pokemon } from "pokenode-ts"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { formatName } from "~/utils/formatName";
 import Image from "next/image";
 
 interface PokemonModalProps {
   pokemon?: Pokemon;
-  open: boolean;
-  setOpen: (open: boolean) => void;
 }
 
-export function PokemonModal({ pokemon, open, setOpen }: PokemonModalProps) {
+export function PokemonModal({ pokemon }: PokemonModalProps) {
   const [currentPokemon, setCurrentPokemon] = useState<Pokemon | undefined>(pokemon);
+  const [isOpen, setOpen] = useState(false);
+
+  useEffect(() => {
+    setCurrentPokemon(pokemon);
+    setOpen(true);
+  }, [pokemon]);
+
 
   return (
     <div>
-      <Dialog open={open} onClose={setOpen} className="relative z-10">
+      <Dialog open={isOpen} onClose={() => setOpen(false)} className="relative z-10">
       <DialogBackdrop
         transition
         className="fixed inset-0 hidden bg-black bg-opacity-25 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in md:block"

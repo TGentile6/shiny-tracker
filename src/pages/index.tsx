@@ -9,7 +9,6 @@ export default function Home() {
   const [pokemonNames, setPokemonNames] = useState<string[]>(["charizard", "pikachu", "bulbasaur", "guzzlord", ]);
   const [pokemonData, setPokemonData] = useState<Pokemon[]>([]);
   const [modalPokemon, setModalPokemon] = useState<Pokemon | undefined>(undefined);
-  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -34,7 +33,6 @@ export default function Home() {
       console.log(mon)
       setModalPokemon(mon);
       console.log(modalPokemon)
-      setModalOpen(true);
     }
   }
 
@@ -62,7 +60,7 @@ export default function Home() {
                 />
               ))}
             </div>
-          <PokemonModal pokemon={modalPokemon} open={modalOpen} setOpen={setModalOpen}/>
+          <PokemonModal pokemon={modalPokemon}/>
         </div>
       </main>
     </>
