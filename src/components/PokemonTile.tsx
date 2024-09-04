@@ -2,21 +2,29 @@ import { type Pokemon } from "pokenode-ts";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { formatName } from "~/utils/formatName";
+import { type CaughtPokemon } from "~/types/CaughtPokemon";
 
 interface ShinyPokemonProps {
-  pokemon: Pokemon;
+  caught: CaughtPokemon;
   onClick: (pokemon: Pokemon | null) => void;
+  getSpeciesData: (species: string) => Promise<Pokemon>;
 }
 
-export function ShinyPokemon({ pokemon, onClick }: ShinyPokemonProps) {
-  const [currentPokemon, setCurrentPokemon] = useState<Pokemon | null>(pokemon);
+export function PokemonTile({ caught, onClick, getSpeciesData }: ShinyPokemonProps) {
+  const [currentCaught, setCurrentCaught] = useState<CaughtPokemon | null>(caught);
+  const [currentSpecies, setCurrentSpecies] = useState<Pokemon | null>(null);
 
   useEffect(() => {
-    setCurrentPokemon(pokemon);
-  }, [pokemon]);
+    const fetchData = async () => {
+      setCurrentCaught(caught);
+      setCurrentSpecies(await getSpeciesData(caught.species));
+    };
+  
+    void fetchData();
+  }, [caught, getSpeciesData]);
 
   const handleClick = () => {
-    onClick(currentPokemon);
+    onClick(caught);
   };
 
 
@@ -26,8 +34,8 @@ export function ShinyPokemon({ pokemon, onClick }: ShinyPokemonProps) {
       onMouseDown={handleClick}
       >
       <Image
-        src={currentPokemon?.sprites.front_shiny ?? ``}
-        alt={currentPokemon?.name ?? `N/A`}
+        src={currentSpecies?.sprites.front_shiny ?? ``}
+        alt={currentSpecies?.name ?? `N/A`}
         unoptimized={true}
         width={192}
         height={192}
@@ -36,7 +44,7 @@ export function ShinyPokemon({ pokemon, onClick }: ShinyPokemonProps) {
         style={{ imageRendering: `pixelated` }}
       />
       <h3 className="text-2xl font-bold shrink text-white">
-        {currentPokemon ? formatName(currentPokemon.name) : `Loading...`}
+        {currentSpecies ? formatName(currentSpecies.name) : `Loading...`}
       </h3>
     </div>
   );

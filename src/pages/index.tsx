@@ -1,40 +1,66 @@
 import Head from "next/head";
-import { ShinyPokemon, PokemonModal} from "~/components";
+import { PokemonTile, PokemonModal} from "~/components";
 import {type Pokemon, PokemonClient} from "pokenode-ts";
 import { useEffect, useState } from "react";
+import { type CaughtPokemon } from "~/types/CaughtPokemon";
 
 export default function Home() {
 
   const pokeAPI = new PokemonClient();
-  const [pokemonNames, setPokemonNames] = useState<string[]>(["charizard", "pikachu", "bulbasaur", "guzzlord", ]);
+  const [caughtPokemonList, setCaughtPokemonList] = useState<CaughtPokemon[] | null>([
+    {
+      species: "charizard",
+    },
+    {
+      species: "pikachu",
+    },
+    {
+      species: "bulbasaur",
+      nickname: "Leaves"
+    },
+    {
+      species: "guzzlord",
+      nickname: "HJMuzzlord",
+    },
+  ]);
   const [pokemonData, setPokemonData] = useState<Pokemon[]>([]);
-  const [modalPokemon, setModalPokemon] = useState<Pokemon | undefined>(undefined);
+  const [modalPokemon, setModalPokemon] = useState<CaughtPokemon | undefined>(undefined);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+  const fetchPokemon = async (species: string) => {
+    const pokemon = await pokeAPI.getPokemonByName(species)
+    // .catch(err => {
+    //   console.error(err);
+    //   return new;
+    // });
+    return pokemon;
+  };
 
   useEffect(() => {
-    const fetchPokemon = async () => {
-      const fetchedPokemon = await Promise.all(
-        pokemonNames.map(async (name) => {
-          const pokemon = await pokeAPI.getPokemonByName(name)
-          // .catch(err => {
-          //   console.error(err);
-          //   return new;
-          // });
-          return pokemon;
-        })
+    const fetchSpeciesData = async () => {
+      const speciesData = await Promise.all(
+        caughtPokemonList?.map(async (caught) => {
+          const species = await fetchPokemon(caught.species);
+          return species;
+        }) ?? [] 
       );
-      setPokemonData(fetchedPokemon);
+      setPokemonData(speciesData);
     };
 
-    void fetchPokemon();
-  }, [pokemonNames]); // eslint-disable-line react-hooks/exhaustive-deps
+    void fetchSpeciesData();
+  }, [caughtPokemonList]);
 
-  const handleClickMon = (mon: Pokemon) => {
-    if (mon) {
-      console.log(mon)
-      setModalPokemon(mon);
-      console.log(modalPokemon)
-    }
+  const getSpeciesData = async (species: string) => {
+    const pokemon = await fetchPokemon(species);
+    return pokemon;
   }
+
+  const handleClickMon = (mon: CaughtPokemon) => {
+    if (mon) {
+      setModalPokemon(mon);
+      setModalOpen(true);
+    }
+  };
 
   useEffect(() => {
     console.log(modalPokemon)
@@ -52,15 +78,16 @@ export default function Home() {
             Simple <span className="text-[#ffcf66]">Shiny</span> Tracker
           </h1>
             <div className="flex flex-wrap justify-start gap-6 max-w-screen-lg mx-auto p-4">
-              {pokemonData.map((pokemon) => (
-                <ShinyPokemon 
-                  key={pokemonData.indexOf(pokemon)} 
-                  pokemon={pokemon}
+              {caughtPokemonList?.map((caught) => (
+                <PokemonTile 
+                  key={caughtPokemonList?.indexOf(caught)} 
+                  caught={caught}
                   onClick={(mon) => mon && handleClickMon(mon)}
+                  getSpeciesData={getSpeciesData}
                 />
               ))}
             </div>
-          <PokemonModal pokemon={modalPokemon}/>
+          {/* <PokemonModal pokemon={modalPokemon} open={modalOpen} setOpen={setModalOpen} getSpeciesData={getSpeciesData}/> */}
         </div>
       </main>
     </>
